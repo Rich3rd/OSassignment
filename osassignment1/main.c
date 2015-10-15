@@ -95,7 +95,7 @@ void process2(void)
 
 void process3(char *path){
     
-    wait(NULL);
+    //sleep(3);
     printf("\n\n\nConfirmation from process 3");
     printf("\nProcess3 created with pid = %d\n", getpid());
     printf("Process3's parent pid is %d",getppid());
@@ -108,11 +108,15 @@ void process3(char *path){
     fflush(stdout);
     close(fd);
     
+    //sleep(1);
     //send message back to parent
-    int pipe3;
-    pipe3 = pipe(fildes3);
+    //int pipe3;
+    //pipe3 = pipe(fildes3);
+    //printf("\n pipe3 creation confirmation: %d",pipe3);
+    //fflush(stdout);
+    
     close(fildes3[0]);
-    pm = write(fildes3[1], "messsage sent from process 3 to parent", 128);
+    pm = write(fildes3[1], "messsage sent from process 3", 128);
     printf(" \n(%d) of chars sent from process3 to parent", pm);
     fflush(stdout);
     //exit(0);
@@ -134,10 +138,14 @@ void parent(void)
     
     //create process3
    // char *path = "/Users/Richard/Desktop";
+    
+    
     char *path = "myfifo";
     unlink(path);
     mkfifo(path, 0600);
     
+    int pipe3;
+    pipe3 = pipe(fildes3);
     pid = fork();
     
     if (pid==0)
@@ -149,15 +157,17 @@ void parent(void)
         fm = write(fd, "message sent from process2 to process3", 128);
         //fflush(stdout);
         close(fd);
-        printf("\n%d char sent by named pipe from process 2",fm);
+        printf("\n%d char sent by named pipe from process 2 to process3",fm);
         fflush(stdout);
         //close(fd);
         //printf("Child send: %d\n", );
         //wait(NULL);
         
+        //sleep(3);
         //read message sent by process 3 to parent
+        //pipe3 = pipe(fildes3);
         close(fildes3[1]);
-        pm = read(fildes[0],buffer,128);
+        pm = read(fildes3[0],buffer,128);
         printf("\n\nMessage received from process3 in parent: %s",buffer);
         printf("\n(%d) char sent from process 3",pm);
         fflush(stdout);

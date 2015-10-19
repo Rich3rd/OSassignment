@@ -11,12 +11,16 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+
 
 #define buffsize 128
 int fildes[2]; //connect parent to process 1
 int fildes2[2]; //connect process 1 to process 2
 int fildes3[2]; //connect process 3 to parent
 char buffer[buffsize];
+char fileBuffer[buffsize];
+int linesInFile = 0;
 //int processNum = 0;
 
 void error(void);
@@ -34,15 +38,22 @@ void error(void)
 void process1(void)
 {
     int pm,pipe2,pid ;
+    int i;
     printf("\n\nProcess1\n");
-    close(fildes[1]);
     printf("Process1 created with pid = %d\n", getpid());
     printf("Process1's parent pid is %d\n",getppid());
+
+    close(fildes[1]);
+    for(i=0;i<linesInFile;i++)
+    {
+        pm = read(fildes[0],&buffer,128);
+        printf("\nmessage received (%s)" , buffer);
+        printf("\nProcess1 received %d chars from pid:%d",pm,getppid());
+        fflush(stdout);
+        sleep(1);
+    }
+    wait(NULL);
     
-    pm = read(fildes[0],buffer,128);
-    printf("message received (%s)\n" , buffer);
-    printf("Process1 received %d chars from pid:%d",pm,getppid());
-    fflush(stdout);
     close(fildes[0]);
     
     //fflush(stdout);
@@ -125,14 +136,27 @@ void process3(char *path){
 
 void parent(void)
 {
+    //initial parent process
     int pid, pm;
     printf("parent starts working\n");
     printf("parent with pid of %d\n",getpid());
     close(fildes[0]);
-    pm = write(fildes[1],"test message",128);
-    printf("number of char written by (parent) %d\n",pm);
+    
+    FILE*fileReader;
+    fileReader = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
+    
+    while(fgets(fileBuffer,128, fileReader)!= NULL)
+          {
+              pm = write(fildes[1],fileBuffer,128);
+              printf("Message sent to child1 is: %s",fileBuffer);
+              printf("number of char written by (parent) %d\n\n",pm);
+              fflush(stdout);
+          }
+          
+    //pm = write(fildes[1],"test message",128);
+    //printf("number of char written by (parent) %d\n",pm);
     //wait(NULL);
-    fflush(stdout);
+    //fflush(stdout);
     
     wait(NULL);
     
@@ -152,8 +176,11 @@ void parent(void)
         process3(path);
     else
     {
+        //name pipes
         int fd,fm;
         fd = open(path, O_WRONLY);
+        //printf("\n IN PARENT \nppid = %d, pid = %d",getpid(),getppid());
+        //fflush(stdout);
         fm = write(fd, "message sent from process2 to process3", 128);
         //fflush(stdout);
         close(fd);
@@ -180,12 +207,23 @@ int main(void) {
     int pipes;
     pid_t pid;
     
+    FILE *filePointer;
+    filePointer = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
+    
+    while(fgets(fileBuffer,128, filePointer)!= NULL)
+    {
+        linesInFile++;
+    }
+    
     pipes = pipe(fildes);
     printf("pipe created with pp = %d \n", pipes);
     pid = fork();
     
     if (pid == 0)
+    {
+        //sleep(3);
         process1();
+    }
     else
         parent();
 }

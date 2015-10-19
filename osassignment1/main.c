@@ -50,6 +50,18 @@ void process1(void)
         printf("\nmessage received (%s)" , buffer);
         printf("\nProcess1 received %d chars from pid:%d",pm,getppid());
         fflush(stdout);
+        
+        
+        if(buffer[0] == '1')
+        {
+            printf("\n STRING TO BE STORED : %s",buffer);
+            fflush(stdout);
+        }
+        else
+        {
+            printf("\n NOT STORED: %s",buffer);
+            fflush(stdout);
+        }
         sleep(1);
     }
     wait(NULL);

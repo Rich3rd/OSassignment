@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <time.h>
 
 
 #define buffsize 128
@@ -19,6 +20,7 @@ int fildes[2]; //connect parent to process 1
 int fildes2[2]; //connect process 1 to process 2
 int fildes3[2]; //connect process 3 to parent
 char buffer[buffsize];
+char tempBuffer[130];
 char fileBuffer[buffsize];
 int linesInFile = 0;
 //int processNum = 0;
@@ -28,6 +30,7 @@ void process1(void);
 void parent(void);
 void process2(void);
 void process3(char *path);
+void timestamp()
 
 void error(void)
 {
@@ -39,9 +42,13 @@ void process1(void)
 {
     int pm,pipe2,pid ;
     int i;
+    int j=3;
+    int m;
     printf("\n\nProcess1\n");
     printf("Process1 created with pid = %d\n", getpid());
     printf("Process1's parent pid is %d\n",getppid());
+    
+    FILE *process1Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process1Log.txt","w");
 
     close(fildes[1]);
     for(i=0;i<linesInFile;i++)
@@ -54,8 +61,29 @@ void process1(void)
         
         if(buffer[0] == '1')
         {
+            memset(tempBuffer,0,buffsize);
             printf("\n STRING TO BE STORED : %s",buffer);
+            
+            //for (j=2;i<buffsize;i++)
+            j=3;
+            while(buffer[j] != '|')
+            {
+                    tempBuffer[j] = buffer[j];
+                    //printf("\ntempBuffer is : %c",tempBuffer[j]);
+                    //fflush(stdout);
+                j++;
+            }
+            
+            
+            printf("\n Inside tempBuffer is : %s",tempBuffer);
+            for(m=0;m<buffsize;m++)
+            {
+                
+                //printf("%c",tempBuffer[m]);
+            }
             fflush(stdout);
+            //fputs(strcat(buffer," STORED\n"),process1Log);
+            //fflush(stdout);
         }
         else
         {
@@ -64,6 +92,7 @@ void process1(void)
         }
         sleep(1);
     }
+    fclose(process1Log);
     wait(NULL);
     
     close(fildes[0]);
@@ -71,6 +100,7 @@ void process1(void)
     //fflush(stdout);
     //sleep(1);
     
+    //create process2 from process1
     pipe2 = pipe(fildes2);
     pid = fork();
     
@@ -82,7 +112,7 @@ void process1(void)
         close(fildes2[0]);
         printf("Process1 created with pid = %d\n", getpid());
         printf("Process1's parent pid is %d\n",getppid());
-        pm = write(fildes2[1],"test message from process 1",128);
+        pm = write(fildes2[1],"test message from process 1",buffsize);
         printf("Process1 sent %d chars", pm);
         fflush(stdout);
         //printf("message received %s\n" , buffer);
@@ -90,6 +120,7 @@ void process1(void)
         wait(NULL);
         exit(0);
     }
+    exit(0);
     
 }
 
@@ -238,4 +269,11 @@ int main(void) {
     }
     else
         parent();
+}
+
+void timestamp()
+{
+    time_t ltime; /* calendar time */
+    ltime=time(NULL); /* get current cal time */
+    printf("%s",asctime( localtime(&ltime) ) );
 }

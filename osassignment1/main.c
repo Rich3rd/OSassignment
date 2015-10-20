@@ -22,15 +22,16 @@ int fildes3[2]; //connect process 3 to parent
 char buffer[buffsize];
 char tempBuffer[130];
 char fileBuffer[buffsize];
+char printToFileBuffer[buffsize];
 int linesInFile = 0;
-//int processNum = 0;
+
 
 void error(void);
 void process1(void);
 void parent(void);
 void process2(void);
 void process3(char *path);
-void timestamp()
+void timestamp();
 
 void error(void)
 {
@@ -40,6 +41,8 @@ void error(void)
 
 void process1(void)
 {
+    time_t t;
+    time(&t);
     int pm,pipe2,pid ;
     int i;
     int j=3;
@@ -68,20 +71,54 @@ void process1(void)
             j=3;
             while(buffer[j] != '|')
             {
-                    tempBuffer[j] = buffer[j];
+                tempBuffer[j] = buffer[j];
                     //printf("\ntempBuffer is : %c",tempBuffer[j]);
                     //fflush(stdout);
                 j++;
             }
             
+            //printf("\n Inside tempBuffer is : %s",tempBuffer);
+            //printToFileBuffer = strcat(ctime(&t),"");
+            char timeStr[100];
+            strftime(timeStr,100,"%X %x // ", localtime(&t));
             
-            printf("\n Inside tempBuffer is : %s",tempBuffer);
+            //fputs(ctime(&t),process1Log);
+            fputs(timeStr,process1Log);
+            
+            //fputs(strcat(tempBuffer, "STORED\n"),process1Log);
+            
+                //strcat(printToFileBuffer,ctime(&t));
+            //printf("\n%s",printToFileBuffer);
+            //fflush(stdout);
+            
+            //strcat(printToFileBuffer," ");
+            //printf("\n%s",printToFileBuffer);
+            //fflush(stdout);
+            
+            //strcat(printToFileBuffer,tempBuffer);
+            //printf("\n%s",printToFileBuffer);
+            //fflush(stdout);
+            //fputs(tempBuffer,process1Log);
+            
             for(m=0;m<buffsize;m++)
             {
+               // if(buffer[m] !=  '\n')
+                 //   fputs(&buffer[m],process1Log);
                 
+                //fprintf(process1Log,"%c",tempBuffer[m]);
+              
+                fprintf(process1Log,"%c",tempBuffer[m]);
                 //printf("%c",tempBuffer[m]);
+                //strcat(printToFileBuffer,&tempBuffer[m]);
+                //printf("\n%s",printToFileBuffer);
+                //fflush(stdout);
             }
-            fflush(stdout);
+            fputs(" //STORED\n",process1Log);
+            
+            //strcat(printToFileBuffer," STORED");
+            //printf("/n%s",printToFileBuffer);
+            //fflush(stdout);
+            //fputs(printToFileBuffer,process1Log);
             //fputs(strcat(buffer," STORED\n"),process1Log);
             //fflush(stdout);
         }
@@ -250,6 +287,7 @@ int main(void) {
     int pipes;
     pid_t pid;
     
+    
     FILE *filePointer;
     filePointer = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
     
@@ -271,9 +309,3 @@ int main(void) {
         parent();
 }
 
-void timestamp()
-{
-    time_t ltime; /* calendar time */
-    ltime=time(NULL); /* get current cal time */
-    printf("%s",asctime( localtime(&ltime) ) );
-}

@@ -15,6 +15,7 @@
 #include <time.h>
 
 
+
 #define buffsize 128
 int fildes[2]; //connect parent to process 1
 int fildes2[2]; //connect process 1 to process 2
@@ -26,11 +27,12 @@ char printToFileBuffer[buffsize];
 int linesInFile = 0;
 
 
+
 void error(void);
-void process1(void);
-void parent(void);
-void process2(void);
-void process3(char *path);
+void process1(char* path);
+void parent(char* path);
+void process2(char* path);
+void process3(char* path);
 void timestamp();
 
 void error(void)
@@ -39,7 +41,7 @@ void error(void)
     
 }
 
-void process1(void)
+void process1(char* path)
 {
     time_t t;
     time(&t);
@@ -142,7 +144,7 @@ void process1(void)
     pid = fork();
     
     if (pid == 0)
-        process2();
+        process2(path);
     else
     {
         printf("\n\n Process1 works\n");
@@ -161,7 +163,7 @@ void process1(void)
     
 }
 
-void process2(void)
+void process2(char* path)
 {
     int pid,pm;
     printf("\n\nProcess2 \n");
@@ -174,9 +176,21 @@ void process2(void)
     printf("Process2 message received:  (%s)\n" , buffer);
     printf("Process2 received %d chars from process 1", pm);
     fflush(stdout);
-    wait(NULL);
+    //wait(NULL);
     
+
+    //unlink(path);
+    //mkfifo(path, 0600);
     
+    printf("\ntrying to send message to process3 using named pipe");
+    fflush(stdout);
+    int fd,fm;
+    fd = open(path, O_WRONLY);
+    fm = write(fd, "message sent from process2 to process3", 128);
+    //fflush(stdout);
+    //close(fd);
+    printf("\n%d char sent by named pipe from process 2 to process3",fm);
+    fflush(stdout);
     
     //fflush(stdout);
     //sleep(1);
@@ -190,14 +204,16 @@ void process3(char *path){
     printf("\n\n\nConfirmation from process 3");
     printf("\nProcess3 created with pid = %d\n", getpid());
     printf("Process3's parent pid is %d",getppid());
+    fflush(stdout);
     
     int fd;
     int pm;
     fd = open(path, O_RDONLY);
-    read(fd, buffer, 128);
+    read(fd, &buffer, buffsize);
+    close(fd);
     printf("\nProcess3 receive: %s\n", buffer);
     fflush(stdout);
-    close(fd);
+    
     
     //sleep(1);
     //send message back to parent
@@ -214,7 +230,7 @@ void process3(char *path){
 }
 
 
-void parent(void)
+void parent(char* path)
 {
     //initial parent process
     int pid, pm;
@@ -238,15 +254,13 @@ void parent(void)
     //wait(NULL);
     //fflush(stdout);
     
-    wait(NULL);
+    //wait(NULL);
     
     //create process3
    // char *path = "/Users/Richard/Desktop";
     
     
-    char *path = "myfifo";
-    unlink(path);
-    mkfifo(path, 0600);
+    
     
     int pipe3;
     pipe3 = pipe(fildes3);
@@ -257,29 +271,31 @@ void parent(void)
     else
     {
         //name pipes
-        int fd,fm;
-        fd = open(path, O_WRONLY);
+            //int fd,fm;
+            //fd = open(path, O_WRONLY);
         //printf("\n IN PARENT \nppid = %d, pid = %d",getpid(),getppid());
         //fflush(stdout);
-        fm = write(fd, "message sent from process2 to process3", 128);
+            //fm = write(fd, "message sent from process2 to process3", 128);
         //fflush(stdout);
-        close(fd);
-        printf("\n%d char sent by named pipe from process 2 to process3",fm);
-        fflush(stdout);
+            //close(fd);
+            //printf("\n%d char sent by named pipe from process 2 to process3",fm);
+            //fflush(stdout);
         //close(fd);
         //printf("Child send: %d\n", );
         //wait(NULL);
         
         //sleep(3);
         //read message sent by process 3 to parent
-        //pipe3 = pipe(fildes3);
-        close(fildes3[1]);
-        pm = read(fildes3[0],buffer,128);
-        printf("\n\nMessage received from process3 in parent: %s",buffer);
-        printf("\n(%d) char sent from process 3",pm);
-        fflush(stdout);
-        exit(0);
+        
+        
+        //exit(0);
     }
+    sleep(2);
+    close(fildes3[1]);
+    pm = read(fildes3[0],buffer,128);
+    printf("\n\nMessage received from process3 in parent: %s",buffer);
+    printf("\n(%d) char sent from process 3",pm);
+    fflush(stdout);
 }
 
 
@@ -287,6 +303,12 @@ int main(void) {
     int pipes;
     pid_t pid;
     
+    int named;
+    char *path = "/tmp/fifo";
+    unlink(path);
+    named = mkfifo(path, 0666);
+    printf("named pipe creation: %d",named);
+    fflush(stdout);
     
     FILE *filePointer;
     filePointer = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
@@ -303,9 +325,9 @@ int main(void) {
     if (pid == 0)
     {
         //sleep(3);
-        process1();
+        process1(path);
     }
     else
-        parent();
+        parent(path);
 }
 

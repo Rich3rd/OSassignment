@@ -28,6 +28,7 @@ int linesInFile = 0;
 
 
 
+
 void error(void);
 void process1(char* path);
 void parent(char* path);
@@ -49,6 +50,7 @@ void process1(char* path)
     int i;
     int j=3;
     int m;
+    int linesCount= 0;
     char timeStr[100];  //TIMESTAMP
     strftime(timeStr,100,"%X %x // ", localtime(&t));
     
@@ -61,7 +63,7 @@ void process1(char* path)
     else
     {
         printf("\n\n Process1 works\n");
-        close(fildes2[0]);
+        close(fildes[1]);
         printf("Process1 created with pid = %d\n", getpid());
         printf("Process1's parent pid is %d\n",getppid());
         
@@ -97,6 +99,7 @@ void process1(char* path)
                     fprintf(process1Log,"%c",tempBuffer[m]);
                 }
                 fputs(" //STORED\n",process1Log);
+                linesCount++;
             }
             else
             {
@@ -120,7 +123,7 @@ void process1(char* path)
                 
                 fputs(" // FORWARD\n",process1Log); //print message status
                 
-                close(fildes[1]);
+                close(fildes2[0]);
                 pm = write(fildes2[1],buffer,buffsize);
                 printf("Process1 sent %d chars", pm);
                 fflush(stdout);
@@ -128,9 +131,10 @@ void process1(char* path)
             sleep(1);
         }
         fclose(process1Log);
-        wait(NULL);
+        //linesInFile = linesInFile - linesCount;
+        //wait(NULL);
         
-        close(fildes[0]);
+        //close(fildes[0]);
 
         
 //        pm = write(fildes2[1],"test message from process 1",buffsize);
@@ -141,60 +145,206 @@ void process1(char* path)
         //wait(NULL);
         //exit(0);
     }
+    
     exit(0);
     
 }
 
 void process2(char* path)
 {
-    int pid,pm;
+    int pid,pm,i,j,m;
+    int linesCount = 0;
+    
+    time_t t;
+    time(&t);
+    char timeStr[100];  //TIMESTAMP
+    strftime(timeStr,100,"%X %x // ", localtime(&t));
+    
     printf("\n\nProcess2 \n");
     close(fildes2[1]);
     printf("Process2 created with pid = %d\n", getpid());
     printf("Process2's parent pid is %d\n",getppid());
     
-    pm = read(fildes2[0],&buffer,128);
-    //printf("confirm message after read\n");
-    printf("Process2 message received:  (%s)\n" , buffer);
-    printf("Process2 received %d chars from process 1", pm);
-    fflush(stdout);
-    //wait(NULL);
+    FILE *process2Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process2Log.txt","w");
     
+    
+    for(i=0;i<linesInFile;i++)
+    {
+        pm = read(fildes2[0],&buffer,128);
+        printf("\nProcess2 message received:  (%s)\n" , buffer);
+        printf("Process2 received %d chars from process 1", pm);
+        
+        if(buffer[0] == '2')
+        {
+            memset(tempBuffer,0,buffsize); //clear char array
+            printf("\n STRING TO BE STORED : %s",buffer);
+            fflush(stdout);
+            
+            j=3;
+            while(buffer[j] != '|')
+            {
+                tempBuffer[j] = buffer[j]; //move message to new char array
+                j++;
+            }
+            
 
-    //unlink(path);
-    //mkfifo(path, 0600);
+            fputs(timeStr,process2Log); //print time stamp
+            
+            for(m=0;m<buffsize;m++)
+            {
+                fprintf(process2Log,"%c",tempBuffer[m]); //print message to log file
+            }
+            fputs(" //STORED\n",process2Log); //print message status to file
+            linesCount++;
+        }
+        
+        else
+        {
+            memset(tempBuffer,0,buffsize);  //clear char array
+            
+            j=3;
+            while(buffer[j] != '|')
+            {
+                tempBuffer[j] = buffer[j];  //move message to new char array
+                j++;
+            }
+            
+            fputs(timeStr,process2Log); //print time stamp
+            
+            for(m=0;m<buffsize;m++) //print message
+            {
+                fprintf(process2Log,"%c",tempBuffer[m]);
+            }
+            
+            fputs(" // FORWARD\n",process2Log); //print message status
+            
+            int fd,fm;
+            fd = open(path, O_WRONLY);
+            fm = write(fd, buffer, 128);
+            //fflush(stdout);
+            //close(fd);
+            printf("\n%d char sent by named pipe from process 2 to process3",fm);
+            fflush(stdout);
+        }
+    }
+
+    fclose(process2Log);
+    //linesInFile = linesInFile - linesCount;
+    exit(0);
+}
+
+//    pm = read(fildes2[0],&buffer,128);
+//    //printf("confirm message after read\n");
+//    printf("Process2 message received:  (%s)\n" , buffer);
+//    printf("Process2 received %d chars from process 1", pm);
+//    fflush(stdout);
+//    wait(NULL);
+//    
+//
+//    unlink(path);
+//    mkfifo(path, 0600);
     
-    printf("\ntrying to send message to process3 using named pipe");
-    fflush(stdout);
-    int fd,fm;
-    fd = open(path, O_WRONLY);
-    fm = write(fd, "message sent from process2 to process3", 128);
-    //fflush(stdout);
-    //close(fd);
-    printf("\n%d char sent by named pipe from process 2 to process3",fm);
-    fflush(stdout);
+//    printf("\ntrying to send message to process3 using named pipe");
+//    fflush(stdout);
+//    int fd,fm;
+//    fd = open(path, O_WRONLY);
+//    fm = write(fd, "message sent from process2 to process3", 128);
+//    //fflush(stdout);
+//    //close(fd);
+//    printf("\n%d char sent by named pipe from process 2 to process3",fm);
+//    fflush(stdout);
     
     //fflush(stdout);
     //sleep(1);
     
     //exit(0);
-}
+
 
 void process3(char *path){
     
     //sleep(3);
+    
+    time_t t;
+    time(&t);
+    char timeStr[100];  //TIMESTAMP
+    strftime(timeStr,100,"%X %x // ", localtime(&t));
+    
+    int i;
+    int fd;
+    int pm;
+    int m;
+    int j;
+    int linesCount = 0;
+    
     printf("\n\n\nConfirmation from process 3");
     printf("\nProcess3 created with pid = %d\n", getpid());
     printf("Process3's parent pid is %d",getppid());
     fflush(stdout);
     
-    int fd;
-    int pm;
+    FILE *process3Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process3Log.txt","w");
     fd = open(path, O_RDONLY);
-    read(fd, &buffer, buffsize);
+    
+    for(i=0;i<linesInFile;i++)
+    {
+        read(fd, &buffer, buffsize);
+        if(buffer[0] == '3')
+        {
+            memset(tempBuffer,0,buffsize); //clear char array
+            printf("\n STRING TO BE STORED : %s",buffer);
+            fflush(stdout);
+            
+            j=3;
+            while(buffer[j] != '|')
+            {
+                tempBuffer[j] = buffer[j]; //move message to new char array
+                j++;
+            }
+            
+            fputs(timeStr,process3Log); //print time stamp
+            
+            for(m=0;m<buffsize;m++)
+            {
+                fprintf(process3Log,"%c",tempBuffer[m]); //print message to log file
+            }
+            fputs(" //STORED\n",process3Log); //print message status to file
+            linesCount++;
+        }
+        
+        else
+        {
+            memset(tempBuffer,0,buffsize);  //clear char array
+            
+            j=3;
+            while(buffer[j] != '|')
+            {
+                tempBuffer[j] = buffer[j];  //move message to new char array
+                j++;
+            }
+            
+            fputs(timeStr,process3Log); //print time stamp
+            
+            for(m=0;m<buffsize;m++) //print message
+            {
+                fprintf(process3Log,"%c",tempBuffer[m]);
+            }
+            
+            fputs(" // FORWARD\n",process3Log); //print message status
+            
+            close(fildes3[0]);
+            pm = write(fildes3[1], buffer, 128);
+            printf(" \n(%d) of chars sent from process3 to parent", pm);
+            fflush(stdout);
+        }
+    }
+    linesInFile = linesInFile - linesCount;
+    fclose(process3Log);
     close(fd);
-    printf("\nProcess3 receive: %s\n", buffer);
-    fflush(stdout);
+    exit(0);
+
+//    read(fd, &buffer, buffsize);
+
+//    printf("\nProcess3 receive: %s\n", buffer);
+//    fflush(stdout);
     
     
     //sleep(1);
@@ -204,12 +354,10 @@ void process3(char *path){
     //printf("\n pipe3 creation confirmation: %d",pipe3);
     //fflush(stdout);
     
-    close(fildes3[0]);
-    pm = write(fildes3[1], "messsage sent from process 3", 128);
-    printf(" \n(%d) of chars sent from process3 to parent", pm);
-    fflush(stdout);
+
     //exit(0);
-}
+    }
+
 
 
 void parent(char* path)

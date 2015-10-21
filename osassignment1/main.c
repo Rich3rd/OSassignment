@@ -49,95 +49,8 @@ void process1(char* path)
     int i;
     int j=3;
     int m;
-    printf("\n\nProcess1\n");
-    printf("Process1 created with pid = %d\n", getpid());
-    printf("Process1's parent pid is %d\n",getppid());
-    
-    FILE *process1Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process1Log.txt","w");
-
-    close(fildes[1]);
-    for(i=0;i<linesInFile;i++)
-    {
-        pm = read(fildes[0],&buffer,128);
-        printf("\nmessage received (%s)" , buffer);
-        printf("\nProcess1 received %d chars from pid:%d",pm,getppid());
-        fflush(stdout);
-        
-        
-        if(buffer[0] == '1')
-        {
-            memset(tempBuffer,0,buffsize);
-            printf("\n STRING TO BE STORED : %s",buffer);
-            
-            //for (j=2;i<buffsize;i++)
-            j=3;
-            while(buffer[j] != '|')
-            {
-                tempBuffer[j] = buffer[j];
-                    //printf("\ntempBuffer is : %c",tempBuffer[j]);
-                    //fflush(stdout);
-                j++;
-            }
-            
-            //printf("\n Inside tempBuffer is : %s",tempBuffer);
-            //printToFileBuffer = strcat(ctime(&t),"");
-            char timeStr[100];
-            strftime(timeStr,100,"%X %x // ", localtime(&t));
-            
-            //fputs(ctime(&t),process1Log);
-            fputs(timeStr,process1Log);
-            
-            //fputs(strcat(tempBuffer, "STORED\n"),process1Log);
-            
-                //strcat(printToFileBuffer,ctime(&t));
-            //printf("\n%s",printToFileBuffer);
-            //fflush(stdout);
-            
-            //strcat(printToFileBuffer," ");
-            //printf("\n%s",printToFileBuffer);
-            //fflush(stdout);
-            
-            //strcat(printToFileBuffer,tempBuffer);
-            //printf("\n%s",printToFileBuffer);
-            //fflush(stdout);
-            //fputs(tempBuffer,process1Log);
-            
-            for(m=0;m<buffsize;m++)
-            {
-               // if(buffer[m] !=  '\n')
-                 //   fputs(&buffer[m],process1Log);
-                
-                //fprintf(process1Log,"%c",tempBuffer[m]);
-              
-                fprintf(process1Log,"%c",tempBuffer[m]);
-                //printf("%c",tempBuffer[m]);
-                //strcat(printToFileBuffer,&tempBuffer[m]);
-                //printf("\n%s",printToFileBuffer);
-                //fflush(stdout);
-            }
-            fputs(" //STORED\n",process1Log);
-            
-            //strcat(printToFileBuffer," STORED");
-            //printf("/n%s",printToFileBuffer);
-            //fflush(stdout);
-            //fputs(printToFileBuffer,process1Log);
-            //fputs(strcat(buffer," STORED\n"),process1Log);
-            //fflush(stdout);
-        }
-        else
-        {
-            printf("\n NOT STORED: %s",buffer);
-            fflush(stdout);
-        }
-        sleep(1);
-    }
-    fclose(process1Log);
-    wait(NULL);
-    
-    close(fildes[0]);
-    
-    //fflush(stdout);
-    //sleep(1);
+    char timeStr[100];  //TIMESTAMP
+    strftime(timeStr,100,"%X %x // ", localtime(&t));
     
     //create process2 from process1
     pipe2 = pipe(fildes2);
@@ -151,13 +64,82 @@ void process1(char* path)
         close(fildes2[0]);
         printf("Process1 created with pid = %d\n", getpid());
         printf("Process1's parent pid is %d\n",getppid());
-        pm = write(fildes2[1],"test message from process 1",buffsize);
-        printf("Process1 sent %d chars", pm);
-        fflush(stdout);
+        
+        FILE *process1Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process1Log.txt","w");
+        
+
+        for(i=0;i<linesInFile;i++)
+        {
+            pm = read(fildes[0],&buffer,128);
+            printf("\nmessage received (%s)" , buffer);
+            printf("\nProcess1 received %d chars from pid:%d",pm,getppid());
+            fflush(stdout);
+            
+            if(buffer[0] == '1')
+            {
+                memset(tempBuffer,0,buffsize);
+                printf("\n STRING TO BE STORED : %s",buffer);
+                
+                j=3;
+                while(buffer[j] != '|')
+                {
+                    tempBuffer[j] = buffer[j];
+                    j++;
+                }
+                
+                //char timeStr[100];  //TIMESTAMP
+                //strftime(timeStr,100,"%X %x // ", localtime(&t));
+                
+                fputs(timeStr,process1Log);
+                
+                for(m=0;m<buffsize;m++)
+                {
+                    fprintf(process1Log,"%c",tempBuffer[m]);
+                }
+                fputs(" //STORED\n",process1Log);
+            }
+            else
+            {
+                printf("\n NOT STORED: %s",buffer);
+                fflush(stdout);
+                
+                memset(tempBuffer,0,buffsize);  //clear char array
+                j=3;
+                while(buffer[j] != '|')
+                {
+                    tempBuffer[j] = buffer[j];  //move message to new char array
+                    j++;
+                }
+                
+                fputs(timeStr,process1Log); //print time stamp
+                
+                for(m=0;m<buffsize;m++) //print message
+                {
+                    fprintf(process1Log,"%c",tempBuffer[m]);
+                }
+                
+                fputs(" // FORWARD\n",process1Log); //print message status
+                
+                close(fildes[1]);
+                pm = write(fildes2[1],buffer,buffsize);
+                printf("Process1 sent %d chars", pm);
+                fflush(stdout);
+            }
+            sleep(1);
+        }
+        fclose(process1Log);
+        wait(NULL);
+        
+        close(fildes[0]);
+
+        
+//        pm = write(fildes2[1],"test message from process 1",buffsize);
+//        printf("Process1 sent %d chars", pm);
+//        fflush(stdout);
         //printf("message received %s\n" , buffer);
         //printf("process%d received %d chars from child, (process number %d)",processNum,pm,processNum);
-        wait(NULL);
-        exit(0);
+        //wait(NULL);
+        //exit(0);
     }
     exit(0);
     

@@ -48,7 +48,7 @@ void process1(char* path)
     else
     {
         close(fildes[1]);
-        FILE *process1Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process1Log.txt","w");
+        FILE *process1Log = fopen("Process1Log.txt","w");
         
         while(read(fildes[0],&buffer,buffsize))
         {
@@ -83,7 +83,7 @@ void process2(char* path)
     
     close(fildes2[1]);
     
-    FILE *process2Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process2Log.txt","w");
+    FILE *process2Log = fopen("Process2Log.txt","w");
     
 
     while(read(fildes2[0],&buffer,buffsize))
@@ -116,7 +116,7 @@ void process3(char *path)
     
     int fd;
     
-    FILE *process3Log = fopen("/Users/Richard/Documents/Xcode/osassignment1/Process3Log.txt","w");
+    FILE *process3Log = fopen("Process3Log.txt","w");
     fd = open(path, O_RDONLY);
     close(fildes3[0]);
     
@@ -155,8 +155,8 @@ void parent(char* path)
     
     close(fildes[0]);
     
-    FILE*fileReader = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
-    FILE* parentLog = fopen("/Users/Richard/Documents/Xcode/osassignment1/parentLog.txt","w");
+    FILE*fileReader = fopen("sampletext.txt","r");
+    FILE* parentLog = fopen("ParentLog.txt","w");
 
     while(fgets(fileBuffer,buffsize,fileReader))
       {

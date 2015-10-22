@@ -139,9 +139,9 @@ void process3(char *path)
     fd = open(path, O_RDONLY);
     close(fildes3[0]);
     
-    for(i=0;i<linesInFile;i++)
+    while(read(fd, &buffer, buffsize))
     {
-        read(fd, &buffer, buffsize);
+        //read(fd, &buffer, buffsize);
         if(buffer[0] == '3')
         {
             fprintf(process3Log,"%s // STORED  // %s",timeStr,buffer);
@@ -167,50 +167,42 @@ void process3(char *path)
 void parent(char* path)
 {
     //initial parent process
+    
+    time_t t;
+    time(&t);
+    char timeStr[100];  //TIMESTAMP
+    strftime(timeStr,100,"%X %x // ", localtime(&t));
+    
     int pid, pm;
-//    printf("parent starts working\n");
-//    printf("parent with pid of %d\n",getpid());
     close(fildes[0]);
     
-    FILE*fileReader;
-    fileReader = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
-    
+    FILE*fileReader = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
+    FILE* parentLog = fopen("/Users/Richard/Documents/Xcode/osassignment1/parentLog.txt","w");
+
     while(fgets(fileBuffer,130, fileReader))
-          {
-              pm = write(fildes[1],fileBuffer,128);
-//              printf("Message sent to child1 is: %s",fileBuffer);
-//              printf("number of char written by (parent) %d\n\n",pm);
-//              fflush(stdout);
-          }
-          
-    //pm = write(fildes[1],"test message",128);
-    //printf("number of char written by (parent) %d\n",pm);
-    //wait(NULL);
-    //fflush(stdout);
+      {
+          pm = write(fildes[1],fileBuffer,128);
+      }
     
-    //wait(NULL);
-    
-    //create process3
-   // char *path = "/Users/Richard/Desktop";
-    
-    
-    
-    
-    int pipe3;
-    pipe3 = pipe(fildes3);
+
+    pipe(fildes3);
     pid = fork();
     
     if (pid==0)
         process3(path);
     else
-    {
-    }
-    //sleep(2);
+        ;
     close(fildes3[1]);
-    pm = read(fildes3[0],buffer,128);
-//    printf("\n\nMessage received from process3 in parent: %s",buffer);
-//    printf("\n(%d) char sent from process 3",pm);
-//    fflush(stdout);
+    while(read(fildes3[0],buffer,128))
+    {
+            fprintf(parentLog,"%s // STORED  // %s",timeStr,buffer);
+            fflush(parentLog);
+    }
+    printf("\n\nclose file\n");
+    fflush(stdout);
+    fclose(parentLog);
+    close(fildes3);
+
 }
 
 
@@ -225,16 +217,7 @@ int main(void) {
     printf("named pipe creation: %d",named);
     fflush(stdout);
     
-    FILE *filePointer;
-    filePointer = fopen("/Users/Richard/Documents/Xcode/osassignment1/sampletext.txt","r");
-    
-    while(fgets(fileBuffer,128, filePointer)!= NULL)
-    {
-        linesInFile++;
-    }
-    
-    pipes = pipe(fildes);
-    printf("pipe created with pp = %d \n", pipes);
+    pipe(fildes);
     pid = fork();
     
     if (pid == 0)
@@ -242,6 +225,5 @@ int main(void) {
         process1(path);
     else
         parent(path);
-
 }
 

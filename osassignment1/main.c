@@ -50,7 +50,12 @@ void process1(char* path)
         close(fildes[1]);
         FILE *process1Log = fopen("Process1Log.txt","w");
         
-        while(read(fildes[0],&buffer,buffsize))
+        fprintf(process1Log,"Pid is: %d \nPPid is: %d\n\n",getpid(),getppid());
+        fflush(process1Log);
+        
+        printf("Process1 reading.......\n");
+        fflush(stdout);
+        while(read(fildes[0],buffer,buffsize))
         {
             if(buffer[0] == '1')
             {
@@ -64,9 +69,11 @@ void process1(char* path)
                 fflush(process1Log);
                 
                 close(fildes2[0]);
-                write(fildes2[1],&buffer,buffsize);
+                write(fildes2[1],buffer,buffsize);
             }
         }
+        printf("Process1 complete.\n");
+        fflush(stdout);
         fclose(process1Log);
         exit(0);
     }
@@ -75,6 +82,7 @@ void process1(char* path)
 void process2(char* path)
 {
     int fd;
+    int fs;
     
     time_t t;
     time(&t);
@@ -85,8 +93,13 @@ void process2(char* path)
     
     FILE *process2Log = fopen("Process2Log.txt","w");
     
-
-    while(read(fildes2[0],&buffer,buffsize))
+    fprintf(process2Log,"Pid is: %d \nPPid is: %d\n\n",getpid(),getppid());
+    fflush(process2Log);
+    
+    printf("Process2 reading......\n");
+    fflush(stdout);
+    
+    while(read(fildes2[0],buffer,buffsize))
     {
         if(buffer[0] == '2')
         {
@@ -100,9 +113,13 @@ void process2(char* path)
             fflush(process2Log);
             
             fd = open(path, O_WRONLY);
-            write(fd, &buffer, buffsize);
+            fs = write(fd, &buffer, buffsize);
+            printf("%d of char sent via named pipe",fs);
+            fflush(stdout);
         }
     }
+    printf("Process2 complete.\n");
+    fflush(stdout);
     fclose(process2Log);
     exit(0);
 }
@@ -120,9 +137,14 @@ void process3(char *path)
     fd = open(path, O_RDONLY);
     close(fildes3[0]);
     
-    while(read(fd, &buffer, buffsize))
+    fprintf(process3Log,"Pid is: %d \nPPid is: %d\n\n",getpid(),getppid());
+    fflush(process3Log);
+    
+    printf("Process3 reading.......\n");
+    fflush(stdout);
+    
+    while(read(fd, buffer, buffsize))
     {
-        //read(fd, &buffer, buffsize);
         if(buffer[0] == '3')
         {
             fprintf(process3Log,"%s // STORED  // %s",timeStr,buffer);
@@ -137,6 +159,8 @@ void process3(char *path)
             write(fildes3[1], &buffer, buffsize);
         }
     }
+    printf("Process3 complete.\n");
+    fflush(stdout);
     fclose(process3Log);
     close(fd);
     exit(0);
@@ -155,20 +179,28 @@ void parent(char* path)
     
     close(fildes[0]);
     
-    FILE*fileReader = fopen("sampletext.txt","r");
+    FILE* fileReader = fopen("sampletext.txt","r");
     FILE* parentLog = fopen("ParentLog.txt","w");
-
+    printf("Parent reading.......\n");
+    fflush(stdout);
     while(fgets(fileBuffer,buffsize,fileReader))
-      {
-          write(fildes[1],fileBuffer,buffsize);
-      }
+    {
+        write(fildes[1],fileBuffer,buffsize);
+    }
+    printf("Parent read complete.\n");
+    fflush(stdout);
     
-
     pipe(fildes3);
     pid = fork();
     
     if (pid==0)
         process3(path);
+    
+    fprintf(parentLog,"Pid is: %d \nPPid is: %d\n\n",getpid(),getppid());
+    fflush(parentLog);
+    
+    printf("Parent reading again......\n");
+    fflush(stdout);
     
     close(fildes3[1]);
     while(read(fildes3[0],buffer,buffsize))
@@ -176,6 +208,8 @@ void parent(char* path)
         fprintf(parentLog,"%s // STORED  // %s",timeStr,buffer);
         fflush(parentLog);
     }
+    printf("Parent return complete.\n");
+    fflush(stdout);
     fclose(parentLog);
 }
 
@@ -185,9 +219,12 @@ int main(void)
     pid_t pid;
     
     int named;
-    char *path = "/tmp/fifo";
+    char *path = "/home/0313766/OperatingSystems/fifo";
     unlink(path);
     named = mkfifo(path, 0666);
+    
+    printf("Note, program won't terminate automatically, please terminate manually.\n");
+    fflush(stdout);
     
     pipe(fildes);
     pid = fork();
@@ -197,5 +234,8 @@ int main(void)
         process1(path);
     else
         parent(path);
+    
+    printf("All process complete.\n");
+    fflush(stdout);
 }
 

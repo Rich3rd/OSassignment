@@ -10,7 +10,7 @@
 // 0313766
 // 23 OCTOBER 2015
 // TIME: 15.47
-// ?/???
+//
 
 
 #include <stdio.h>
@@ -66,17 +66,17 @@ void process1(char* path)
         {
             if(buffer[0] == '1')
             {
-                fprintf(process1Log,"%s // STORED  // %s",timeStr,buffer);
+                fprintf(process1Log,"%s // STORED  // %s",timeStr,buffer);  //store message
                 fflush(process1Log);
             }
             
             else
             {
-                fprintf(process1Log,"%s // FORWARD // %s",timeStr,buffer);
+                fprintf(process1Log,"%s // FORWARD // %s",timeStr,buffer);  //store message
                 fflush(process1Log);
                 
                 close(fildes2[0]);
-                write(fildes2[1],buffer,buffsize);
+                write(fildes2[1],buffer,buffsize);  //keeps sending
             }
         }
         printf("Process1 complete.\n");
@@ -109,13 +109,13 @@ void process2(char* path)
     {
         if(buffer[0] == '2')
         {
-            fprintf(process2Log,"%s // STORED  // %s",timeStr,buffer);
+            fprintf(process2Log,"%s // STORED  // %s",timeStr,buffer); //store message
             fflush(process2Log);
         }
         
         else
         {
-            fprintf(process2Log,"%s // FORWARD // %s",timeStr,buffer);
+            fprintf(process2Log,"%s // FORWARD // %s",timeStr,buffer); //store message
             fflush(process2Log);
             
             fd = open(path, O_WRONLY);
@@ -151,13 +151,13 @@ void process3(char *path)
     {
         if(buffer[0] == '3')
         {
-            fprintf(process3Log,"%s // STORED  // %s",timeStr,buffer);
+            fprintf(process3Log,"%s // STORED  // %s",timeStr,buffer); //store message
             fflush(process3Log);
         }
         
         else
         {
-            fprintf(process3Log,"%s // FORWARD // %s",timeStr,buffer);
+            fprintf(process3Log,"%s // FORWARD // %s",timeStr,buffer); //store message
             fflush(process3Log);
             
             write(fildes3[1], &buffer, buffsize);

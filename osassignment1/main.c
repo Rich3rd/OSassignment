@@ -82,7 +82,6 @@ void process1(char* path)
 void process2(char* path)
 {
     int fd;
-    int fs;
     
     time_t t;
     time(&t);
@@ -113,7 +112,7 @@ void process2(char* path)
             fflush(process2Log);
             
             fd = open(path, O_WRONLY);
-            fs = write(fd, &buffer, buffsize);
+            write(fd, &buffer, buffsize);
         }
     }
     printf("Process2 complete.\n");
@@ -166,7 +165,7 @@ void process3(char *path)
 
 
 
-void parent(char* path,char* argv[])
+void parent(char* path,char** argv)
 {
     time_t t;
     time(&t);
@@ -232,7 +231,7 @@ int main(int argc, char** argv)
 
         process1(path);
     else
-        parent(path,&argv[1]);
+        parent(path,argv);
     
     printf("All process complete.\n");
     fflush(stdout);

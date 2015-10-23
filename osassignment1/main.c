@@ -5,6 +5,11 @@
 //  Created by Richard Ng on 12/10/2015.
 //  Copyright (c) 2015 Richard Ng. All rights reserved.
 //
+// OS ASSIGNMENT 1
+// NG TER JING
+// 0313766
+// 23 OCTOBER 2015
+// TIME: 15.47
 
 #include <stdio.h>
 #include <unistd.h>

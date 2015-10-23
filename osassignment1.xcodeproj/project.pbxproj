@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		79227BB61BCB9EFD0048B57E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 79227BB51BCB9EFD0048B57E /* main.c */; };
+		79937E571BDA1DAE0053B6F2 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 79937E561BDA1DAE0053B6F2 /* Makefile */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,7 @@
 /* Begin PBXFileReference section */
 		79227BB21BCB9EFD0048B57E /* osassignment1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = osassignment1; sourceTree = BUILT_PRODUCTS_DIR; };
 		79227BB51BCB9EFD0048B57E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		79937E561BDA1DAE0053B6F2 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../../../../../OSassignment1/Makefile; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 		79227BB41BCB9EFD0048B57E /* osassignment1 */ = {
 			isa = PBXGroup;
 			children = (
+				79937E561BDA1DAE0053B6F2 /* Makefile */,
 				79227BB51BCB9EFD0048B57E /* main.c */,
 			);
 			path = osassignment1;
@@ -118,6 +121,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				79937E571BDA1DAE0053B6F2 /* Makefile in Sources */,
 				79227BB61BCB9EFD0048B57E /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -235,6 +239,7 @@
 				79227BBB1BCB9EFD0048B57E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

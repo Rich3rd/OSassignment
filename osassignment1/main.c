@@ -26,7 +26,7 @@ char fileBuffer[buffsize];
 
 
 void process1(char* path);
-void parent(char* path);
+void parent(char* path,char* argv[]);
 void process2(char* path);
 void process3(char* path);
 
@@ -114,8 +114,6 @@ void process2(char* path)
             
             fd = open(path, O_WRONLY);
             fs = write(fd, &buffer, buffsize);
-            printf("%d of char sent via named pipe",fs);
-            fflush(stdout);
         }
     }
     printf("Process2 complete.\n");
@@ -168,7 +166,7 @@ void process3(char *path)
 
 
 
-void parent(char* path)
+void parent(char* path,char* argv[])
 {
     time_t t;
     time(&t);
@@ -179,7 +177,8 @@ void parent(char* path)
     
     close(fildes[0]);
     
-    FILE* fileReader = fopen("sampletext.txt","r");
+    //FILE* fileReader = fopen("sampletext.txt","r");
+    FILE* fileReader  = fopen(argv[1],"r");
     FILE* parentLog = fopen("ParentLog.txt","w");
     printf("Parent reading.......\n");
     fflush(stdout);
@@ -214,12 +213,12 @@ void parent(char* path)
 }
 
 
-int main(void)
+int main(int argc, char** argv)
 {
     pid_t pid;
     
     int named;
-    char *path = "/home/0313766/OperatingSystems/fifo";
+    char *path = "fifo";
     unlink(path);
     named = mkfifo(path, 0666);
     
@@ -233,7 +232,7 @@ int main(void)
 
         process1(path);
     else
-        parent(path);
+        parent(path,&argv[1]);
     
     printf("All process complete.\n");
     fflush(stdout);
